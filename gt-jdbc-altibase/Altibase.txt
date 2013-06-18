@@ -1,0 +1,323 @@
+﻿Altibase Tips
+================
+ 두 버전의 ALTIBASE에 접속하기 위해서는 Altibase.jar와 Altibase5.jar 
+ 두 개의 JDBC Driver가 있어야 하고 Driver 클래스 로딩 시 반드시 Altibase5.jdbc.driver.AltibaseDriver를 먼저 로딩해줘야 한다.
+http://atc.altibase.com/techSupport?do=techSupportView&paramCaseNo=28920
+
+환경 변수
+ - ALTIBASE_NLS_USE : 데이터 검색 시, 사용자에게 보여주는 문자 셋
+알티베이스DB에서 사용하는 캐릭터셋 확인 방법
+ - 5.x 버전 : v$nls_parameters 뷰의 NLS_CHARACTERSET
+ - 4.x 버전 : select name, value1 from v$property where name like 'NLS_USE';
+ClassName
+ - 4.x 버전(Altibase.jar) : Altibase.jdbc.driver.AltibaseDriver
+ - 5.x 버전(Altibase5.jar) : Altibase5.jdbc.driver.AltibaseDriver
+URL(공통)
+ - jdbc:Altibase://ip:20300/mydb?encoding=KO16KSC5601
+ - encoding=UTF8, US7ASCII, KO16KSC5601, MS949 가능. 
+
+GeoTools 연결방법
+==================
+Map<String, Object> params = new HashMap<String, Object>();
+params.put(JDBCDataStoreFactory.DBTYPE.key, "altibase");
+params.put(JDBCDataStoreFactory.HOST.key, "localhost");
+params.put(JDBCDataStoreFactory.DATABASE.key, "mydb");
+params.put(JDBCDataStoreFactory.PORT.key, "20300");
+params.put(JDBCDataStoreFactory.USER.key, "sys");
+params.put(JDBCDataStoreFactory.PASSWD.key, "manager");
+
+Altibase Spatial Tips
+=======================
+// Altibase에서 WKT는 32K 까지만 지원하며 varchar로 인식함
+//params.put(AltibaseNGDataStoreFactory.PREPARED_STATEMENTS.key, Boolean.TRUE);
+
+* Altibase에서 WKT는 32K 까지만 지원하며 varchar로 인식함
+* Altibase에서 WKB는 테이블 생성시 기본옵션으로 32000 사이즈를 사용함, 따라서 시군구와 같은 경우에 Geometry 필드의 사이즈를 늘릴 필요가 있음
+ - http://atc.altibase.com/techSupport?do=techSupportView&paramCaseNo=31735&paramTimesheetWorkNo=0
+* Altibase에서 Geometry의 Valid를 반드시 체크해서 넣어야 함. Geometry.isValid() 체크 후 수정해야 함
+ A non-simple POLYGON violates the definition of a POLYGON, and thus cannot be inserted.
+ A GEOMETRY column cannot be used as a primary key.
+ The UNIQUE constraint cannot be specified for a GEOMETRY column.
+
+* Geometry 필드의 크기 설정 : 
+알티베이스 프로퍼티 설정은 ${ALTIBASE_HOME}/conf/ 에 위치한 알티베이스 프로퍼티 파일(altibase.properties)을 수정하여 설정
+ 따라서 4,993,219개의 버텍스 삽입이 가능함
+#=================================================================
+# ST Object Buffer Size Properties
+#=================================================================
+ST_OBJECT_BUFFER_SIZE = 32000 # default : 32000 ==> 1,523
+                              # min     : 32000
+                              # max     : 104857600    ==> 4,993,219     4993219
+
+* Server 의 시작과 종료
+C:\Server\Altibase\altibase-server-5.5.1\bin\server.bat 파일 참조
+
+server start
+server stop
+
+* command 사용
+isql -u sys -p manager
+
+SELECT SEQUENCE_NAME FROM SEQ;
+
+* 테이블 및 필드 조회시 주의사항
+테이블 또는필드가 대문자일 경우에 그냥 사용, 소문자로 입력하더라도 대문자로 인식함
+ex)iSQL> desc UBSM0103_CRM;
+   iSQL> desc polyline;
+   [ERR-91014 : Table(POLYLINE) does not exist.]
+
+테이블 또는 필드가 소문자일 경우에는 반드시 "" 사용
+ex)iSQL> desc "wardoffice";
+
+
+
+* 예를 들어, 저장해야 하는 데이타가 "magic"일 경우 VARCHAR(10)
+FIXED 로 정의하면 "magic "으로 10 바이트 만큼의 저장공간을
+사용하며, VARCHAR(10) VARIABLE 로 정의하면 "magic"으로 5
+바이트 만큼의 저장 공간을 사용한다.
+FIXED 는 저장공간이 낭비되는 반면, 저장공간의 크기가 고정되어
+있어 처리 속도가 빨라지는 장점이 있다.
+VARIABLE 은 데이타마다 저장 공간의 크기가 달라 처리 속도가 느린
+반면, 저장공간을 효율적으로 사용하는 장점이 있다.
+
+
+* Select Features
+ - Attribute Filter, Spatial Filter
+SELECT TYPE FROM GEOMETRY_COLUMNS WHERE F_TABLE_SCHEMA = 'SYS' AND F_TABLE_NAME = 'BUILDING' AND F_GEOMETRY_COLUMN = 'OBJ'
+
+* Create FeatureType
+CREATE TABLE "BUILDING" ( "fid" INTEGER PRIMARY KEY, "shape" geometry, "STR" VARCHAR(50), "SHT" SMALLINT, "INT" INTEGER, "FLT" REAL, "DBL" DOUBLE ) 
+DELETE FROM GEOMETRY_COLUMNS WHERE f_table_schema = 'SYS' AND f_table_name = 'BUILDING' AND f_geometry_column = 'shape'
+
+INSERT INTO GEOMETRY_COLUMNS VALUES ('SYS','BUILDING','shape',2,1)
+ ==> ADDGEOMETRYCOLUMNS(f_schema VARCHAR(40), f_table_name VARCHAR(40), f_column_name VARCHAR(40), coordinate_dimension INTEGER, srid INTEGER);
+ ==> srid는 반드시 SPATIAL_REF_SYS 테이블의 SRID 필드값 내에 포함되어 있어야 함, 그렇지 않으면 오류
+
+CREATE INDEX "spatial_BUILDING_shape" ON "SYS"."BUILDING" ("shape") INDEXTYPE IS RTREE
+SELECT seq_BUILDING_fid.nextval FROM BUILDING
+
+* Insert Features
+SELECT seq_building_fid.NEXTVAL FROM DUAL;
+INSERT INTO "BUILDING" ( "THE_GEOM","STR","SHT","INT","FLT","DBL","fid" ) VALUES ( GEOMFROMTEXT('POINT (32 12)'),null,null,null,null,null,1)
+
+* Update Features
+
+* Delete Features
+
+* spatial_ref_sys update
+isql -u sys -p manager -f spatial_ref_sys.sql
+
+============================================
+◎ Geometry Reference Table
+============================================
+1. How to Install
+You can add $ALTIBASE_HOME/thirdparty/ArcGIS/geometry_colums.sql to ALTIBASE package by running iSQL.
+
+$ isql -u sys -p manager -f $ALTIBASE_HOME/thirdparty/ArcGIS/geometry_columns.sql
+
+2. How to Use
+SPATIAL_REF_SYS and GEOMETRY_COLUMNS are PUBLIC SYNONYM tables. You can only look up them.
+ADDGEOMETRYCOLUMNS and DROPGEOMETRYCOLUMNS are PUBLIC SYNONYM procedures. You can insert and delete information in GEOMETRY_COLUMNS table by executing them.
+You can add extra information to geometry reference table besides information of geometry reference system by modifying $ALTIBASE_HOME/thirdparty/ArcGIS/geometry_colums.sql.
+
+3. GEOMETRY_COLUMNS
+You can use this to define and mange SRID (Spatial Reference ID) in GEOMETRY column.
+
+Column name Type Description
+F_TABLE_SCHEMA VARCHAR(256) User Name
+F_TABLE_NAME VARCHAR(256) Name of Feature
+F_GEOMETRY_COLUMN VARCHAR(256) COLUMN Name
+COORD_DIMENSION INTERGER Dimension of Geometry Object
+SRID INTERGER Spatial Reference Indentifier
+
+4. SPATIAL_REF_SYS
+You can manage information of SRID (Spatial Reference System) and SRS (Spatial Reference System) with this.
+
+Column name Type Description
+SRID INTEGER Spatial reference identifier used
+internally
+AUTH_NAME VARCHAR(80) Certified name
+AUTH_SRID INTERGER Certified spatial reference identifier
+SRTEXT VARCHAR (2048) Description of WKT geometries
+used throughout OGC specifications
+PROJ4TEXT VARCHAR (2048) PROJ4 infromation
+
+5. Stored Procedure
+▷ ADDGEOMETRYCOLUMNS
+ADDGEOMETRYCOLUMNS(f_schema VARCHAR(40), f_table_name VARCHAR(40), f_column_name VARCHAR(40), srid INTEGER);
+
+ISQL> exec AddGeometryColumns( 'SYS', 'T2', 'I1', 100 );
+Execute success.
+ISQL> exec AddGeometryColumns( 'SYS', 'T2', 'I1', -1 );
+[ERR-F1F14 : This column is already added.
+
+▷ DROPGEOMETRYCOLUMNS
+DROPGEOMETRYCOLUMNS( varchar(40), varchar(40), varchar(40) );
+
+iSQL> exec DropGeometryColumns( 'SYS', 'T2', 'I1' );
+Execute success.
+ISQL> exec DropGeometryColumns( 'SYS', 'T1', 'I1' );
+[ERR-F1F13 : This column is not geometry column.
+
+============================================
+◎ Spatial SQL
+============================================
+1. GEOMETRY Data Types
+▷ POINT
+▷ MULTIPOINT
+▷ LINESTRING
+▷ MULTILINESTRING
+▷ POLYGON
+▷ MULTIPOLYGON
+▷ GEOMETRYCOLLECTION
+
+ex)
+CREATE TABLE road ( id INTEGER, obj GEOMETRY ) ;
+INSERT INTO road VALUES (1, GEOMETRY'LINESTRING( 0 18, 10 21, 16 23, 28 26, 44 31 )') ;
+INSERT INTO road VALUES (2, GEOMFROMTEXT('LINESTRING( 30 31, 56 34, 70 24)')) ;
+INSERT INTO road VALUES (3, LINEFROMTEXT('LINESTRING( 70 38, 32 12, 36 36)')) ;
+
+2. GEOMETRY Data Type Format
+In Altibase, GEOMETRY data type can be expressed in one of the three ways described below :
+▷ WKT (Well-Known Text) is text style format in which a spatial object is represented in letters and numbers so that it can be used with SQL. The WKT grammar is designed for simplicity and readability.
+▷ WKB (Well-Known Binary) is a format in which a spatial object is represented in binary form. It is designed to enable efficient data transfer and operation of GEOMETRY data.
+▷ A binary form that is used to store data in Altibase. It is designed for efficient management and spatial operations. Data can be manipulated with C-API or JAVA-API. C-API and JAVA-API will be described in Chapter 3. JAVA-API will become available in the future.
+
+3. DDL For Geometry
+▷ CREATE TABLE
+CREATE TABLE table_name (column_name GEOMETRY [(precision)] );
+ex)
+CREATE TABLE t1 ( id INTEGER, obj GEOMETRY ) ;
+CREATE TABLE t2 ( id INTEGER, obj GEOMETRY (128) ) ;
+
+▷ CREATE INDEX
+CREATE INDEX index_name ON table_name ( column_name ) [INDEXTYPE IS RTREE] ;
+ex)
+CREATE TABLE t1 ( id INTEGER, obj GEOMETRY ) ;
+CREATE INDEX idx_t1 ON t1 ( obj ) ;
+CREATE INDEX idx_t2 ON t2 ( obj ) INDEXTYPE IS RTREE ;
+
+=========================================================
+4. Spatial Functions for Altibase
+Depending on their features, spatial functions that are available in Altibase can be classified as follows:
+• Basic Functions: Used to find characteristics and basic attributes.
+• Spatial Analysis Functions: Used to perform various analyses using GEOMETRY.
+• Spatial Object Creation Functions: Used to create a spatial object in WKT or WKB format rather than the interior storage format of Altibase.
+
+4.1 Basic Spatial Functions
+▷ DIMENSION( GEOMETRY )
+▷ GEOMETRYTYPE( GEOMETRY )
+▷ ENVELOPE( GEOMETRY )
+▷ ASTEXT( GEOMETRY[,precision] )
+▷ ASBINARY( GEOMETRY )
+▷ ISEMPTY( GEOMETRY )
+▷ ISSIMPLE( GEOMETRY )
+▷ ISVALID( GEOMETRY )
+▷ BOUNDARY( GEOMETRY )
+▷ X( GEOMETRY ) or COORDX( GEOMETRY )
+▷ Y( GEOMETRY ) or COORDY( GEOMETRY )
+▷ MINX( GEOMETRY )
+▷ MINY( GEOMETRY )
+▷ MAXX( GEOMETRY )
+▷ MAXY( GEOMETRY )
+ex) SELECT MIN(MINX(F2)), MIN(MINY(F2)), MAX(MAXX(F2)), MAX(MAXY(F2) FROM TB1;
+▷ GEOMETRYLENGTH( GEOMETRY )
+▷ STARTPOINT( GEOMETRY )
+▷ ENDPOINT( GEOMETRY )
+▷ ISCLOSED( GEOMETRY )
+▷ ISRING( GEOMETRY )
+▷ NUMPOINTS( GEOMETRY )
+▷ POINTN( GEOMETRY, N )
+▷ AREA( GEOMETRY )
+▷ CENTROID( GEOMETRY )
+▷ POINTONSURFACE( GEOMETRY )
+▷ EXTERIORRING( GEOMETRY )
+▷ NUMINTERIORRING( GEOMETRY )
+▷ INTERIORRINGN( GEOMETRY, N )
+▷ NUMGEOMETRIES( GEOMETRY )
+▷ GEOMETRYN( GEOMETRY, N )
+
+4.2. Spatial Analysis Functions
+▷ DISTANCE( GEOMETRY1, GEOMETRY2 )
+▷ BUFFER( GEOMETRY, NUMBER )
+▷ CONVEXHULL( GEOMETRY )
+▷ INTERSECTION( GEOMETRY1, GEOMETRY2 )
+▷ UNION( GEOMETRY1, GEOMETRY2 )
+▷ DIFFERENCE( GEOMETRY1, GEOMETRY2 )
+▷ SYMDIFFERENCE( GEOMETRY1, GEOMETRY2 )
+
+7. Spatial Object Creation Functions
+▷ GEOMFROMTEXT( WKT )
+▷ POINTFROMTEXT( WKT )
+▷ LINEFROMTEXT( WKT )
+▷ POLYFROMTEXT( WKT )
+▷ MPOINTFROMTEXT( WKT )
+▷ MLINEFROMTEXT( WKT )
+▷ MPOLYFROMTEXT( WKT )
+▷ GEOMCOLLFROMTEXT( WKT )
+
+▷ GEOMFROMWKB( WKB )
+▷ POINTFROMWKB( WKB )
+▷ LINEFROMWKB( WKB )
+▷ POLYFROMWKB( WKB )
+▷ MPOINTFROMWKB( WKB )
+▷ MLINEFROMWKB( WKB )
+▷ MPOLYFROMWKB( WKB )
+▷ GEOMCOLLFROMWKB( WKB )
+
+4.3. Spatial Relational Operators
+▷ EQUALS( GEOMETRY1, GEOMETRY2 )
+▷ DISJOINT( GEOMETRY1, GEOMETRY2 )
+▷ INTERSECTS( GEOMETRY1, GEOMETRY2 )
+▷ TOUCHES( GEOMETRY1, GEOMETRY2 )
+▷ CROSSES( GEOMETRY1, GEOMETRY2 )
+▷ WITHIN( GEOMETRY1, GEOMETRY2 )
+▷ CONTAINS( GEOMETRY1, GEOMETRY2 )
+▷ OVERLAPS( GEOMETRY1, GEOMETRY2 )
+▷ RELATE( GEOMETRY1, GEOMETRY2 , patterns )
+
+▷ ISMBRINTERSECTS( GEOMETRY1, GEOMETRY2 )
+▷ ISMBRWITHIN( GEOMETRY1, GEOMETRY2 )
+▷ ISMBRCONTAINS( GEOMETRY1, GEOMETRY2 )
+
+5. Reserved Words
+AREA ASBINARY
+ASTEXT BOUNDARY
+BUFFER CENTROID
+CONTAINS CONVEXHULL
+COORDX COORDY
+CROSSES DIFFERENCE
+DIMENSION DISJOINTS
+DISTANCEEN DPOINT
+ENVELOPE EQUALS
+EXTERIORRING GEOMCOLLFROMTEXT
+GEOMCOLLFROMWKB GEOMETRY
+GEOMETRYCOLLECTION GEOMETRYLENGTH
+GEOMETRYN GEOMETRYTYPE
+GEOMFROMTEXT GEOMFROMWKB
+INTERIORRINGN INTERSECTION
+INTERSECTS ISCLOSED
+ISEMPTY ISRING
+ISSIMPLE LINEFROMTEXT
+LINEFROMWKB LINESTRING
+MLINEFROMTEXT MLINEFROMWKB
+MPOINTFROMTEXT MPOINTFROMWKB
+MPOLYFROMTEXT MPOLYFROMWKB
+MULTILINESTRING MULTIPOINT
+MULTIPOLYGON NUMGEOMETRIES
+NUMINTERIORRING NUMPOINTS
+OVERLAPS POINT
+POINTFROMTEXT POINTFROMWKB
+POINTN POINTONSURFACE
+POLYFROMTEXT POLYFROMWKB
+POLYGON RELATE
+ST_GEOMETRY STARTPOINT
+SYMDIFFERENCE TOUCHES
+UNION WITHIN
+X Y
+MINX MINY
+MAXX MAXY
+ISVALID
+
+* 참고: PostGIS Reference
+http://postgis.refractions.net/documentation/manual-1.5/reference.html

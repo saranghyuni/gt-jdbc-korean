@@ -1,0 +1,2 @@
+org.geotools.data.altibase.AltibaseNGDataStoreFactory
+org.geotools.data.altibase.AltibaseNGJNDIDataStoreFactory

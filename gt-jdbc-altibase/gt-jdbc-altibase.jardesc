@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
+    <jar path="gt-jdbc-altibase-8.0.0/gt-jdbc-altibase-8.0.0.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/gt-jdbc-altibase-8.0.0/gt-jdbc-altibase.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="/gt-jdbc-altibase-8.0.0/gt-jdbc-altibase-8.0.0" manifestVersion="1.0" reuseManifest="false" saveManifest="true" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=gt-jdbc-altibase-8.0.0/src"/>
+        <folder path="/gt-jdbc-altibase-8.0.0/META-INF"/>
+        <file path="/gt-jdbc-altibase-8.0.0/Altibase.txt"/>
+        <file path="/gt-jdbc-altibase-8.0.0/spatial_ref_sys.sql"/>
+    </selectedElements>
+</jardesc>
