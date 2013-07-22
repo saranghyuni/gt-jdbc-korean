@@ -1,7 +1,8 @@
 gt-jdbc-korean
 ==============
 
-The Development of Domestic Spatial DBMS Driver supporting java based Open Source GIS(GeoServer, uDig)
+The Development of Domestic Spatial DBMS Driver supporting java based Open Source GIS(GeoServer, uDig)..
+
 
 @ DataStore plugins:
   - Altibase Plugin( http://www.mangosystem.com:8080/gxt/docs/data/database/altibase.html )
