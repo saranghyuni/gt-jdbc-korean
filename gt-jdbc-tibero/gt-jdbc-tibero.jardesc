@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="MS949" standalone="no"?>
+<jardesc>
+    <jar path="gt-jdbc-tibero/gt-jdbc-tibero-1.0.0.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/gt-jdbc-tibero/gt-jdbc-tibero.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="/gt-geoprocessing/gt-geoprocessing" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <folder path="/gt-jdbc-tibero/META-INF"/>
+        <javaElement handleIdentifier="=gt-jdbc-tibero/src&lt;org.geotools.data.tibero"/>
+    </selectedElements>
+</jardesc>

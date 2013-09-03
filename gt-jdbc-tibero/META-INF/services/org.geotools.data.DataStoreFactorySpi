@@ -1,0 +1,2 @@
+org.geotools.data.tibero.TiberoNGDataStoreFactory
+org.geotools.data.tibero.TiberoNGJNDIDataStoreFactory
