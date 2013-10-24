@@ -1,0 +1,262 @@
+Kairos Spatial (Ext.)
+Kairos Spatial Ext.은 2차원 및 3차원 공간 객체를 저장, 변경, 검색할 수 있는 기
+능을 제공한다. 2차원 공간 객체 기능 규격은 GIS 국제 표준 단체인 OGC(Open
+GIS Consortium) Simple Feature 규격을 지원하며, 3차원 공간 객체에 대한 기능은
+3차원 도형과 TIN(Triangulated Irregular Network) 같은 지형 데이터 처리 기능으
+로 구성되어 있다. 사용자는 공간 데이터 처리 기능이 확장된 Kairos Spatial SQL
+을 통하여 속성 데이터와 공간 데이터 모두를 접근할 수 있으므로, 보다 편리한
+응용 프로그램 개발이 가능하다.
+Kairos Spatial Ext.에서 추가적으로 지원하는 주요 기능 및 특징은 다음과 같다.
+색인 기법
+Kairos Spatial Ext.은 MMDBMS에 적합한 공간 데이터 색인 기법을 추가 지원한
+다.
+􀁺 R*-Tree 색인
+􀁺 3D-RTree 색인
+Kairos Spatial SQL
+Kairos Spatial Ext.은 Kairos RDBMS SQL에 효율적인 공간 데이터 처리를 지원하
+기 위한 기능이 확장된 Kairos Spatial SQL을 지원한다.
+􀁺 확장 데이터 타입
+􀂄 공간 데이터 타입 제공 (ST_POINT, ST_LINESTRING, ST_POLYGON,
+ST_POINT3D, ST_LINESTRING3D, ST_TIN 등)
+􀁺 확장 질의
+􀂄 2차원 공간 객체에 대한 OGC-OpenGIS Simple Feature 규격의 공간 관계
+연산 제공
+􀂄 2차원 공간 객체에 대한 메모리에 최적화된 공간 조인(Spatial-Join) 알
+고리즘 적용
+􀂄 2차원 및 3차원 공간객체에 대한 다양한 공간 분석 함수 제공
+􀂄 대용량 데이터의 효율적 공간 연산을 위한 2차 필터 기능 적용
+표준 프로그래밍 인터페이스
+Kairos Spatial Ext.은 다음과 같은 Kairos RDBMS의 표준 프로그래밍 인터페이스
+를 확대 지원한다.
+􀁺 ODBC (Kairos Spatial)
+􀁺 JDBC (Kairos Spatial)
+유틸리티
+Kairos Spatial Ext.은 다음과 같은 Kairos RDBMS의 유틸리티를 확대 및 추가 지
+원한다.
+􀁺 kloader(Kairos Spatial)
+􀂄 산업표준 GIS 파일(SHAPE format) 데이터의 import / export 기능
+􀁺 MapViewer
+􀂄 GUI 기반 2차원 공간 객체 검색 뷰어
+
+
+2 차원 공간 데이터 타입
+[표 2-1] Kairos 공간 객체 데이터 타입
+공간 객체 타입 Kairos 데이터 타입명 설명
+Geometry ST_GEOMETRY 모든 Kairos Spatial 공간 객체 데이터 타입을 총칭하는 추상 객체 타입
+GeometryCollection ST_GEOMCOLLECTION 1개 이상의 Geometry 객체로 이루어지는 공간 객체 타입
+Point ST_POINT 1개의 점 객체를 표현
+LineString ST_LINESTRING 여러개의 점으로 구성되는 선 객체를 표현
+Polygon ST_POLYGON 여러개의 점으로 구성되는 다각형 객체를 표현
+MultiPoint ST_MULTIPOINT 다중 점 객체를 표현
+MultiLineString ST_MULTILINESTRING 다중 선 객체를 표현
+MultiPolygon ST_MULTIPOLYGON 다중 다각형 객체를 표현
+Rectangle ST_RECTANGLE 두 점(좌하단, 우상단)으로 이루어지는 직사각형을 표현
+
+3 차원 공간 데이터 타입
+Kairos Spatial 에서 제공되는 3차원 공간 객체 데이터 타입(3D-Spatial Object Data
+Type)은 PointZ, LinestringZ, PolygonZ, Polyhedra 등과 같은 3차원 도형과
+TIN(Triangulated Irregular Network) 같은 지형 데이터 타입으로 구분된다
+
+[표 2-2] Kairos 에서 제공하는 3 차원 공간 객체 데이터 타입
+공간 객체 타입 Kairos 데이터 타입명 설명
+Geometry3D ST_GEOMETRY3D 모든 Kairos Spatial 3D 공간 객체 데이터 타입을 총칭하는 추상 객체 타입
+PointZ ST_POINTZ 1개의 3차원 점 객체를 표현
+LinestringZ ST_LINESTRINGZ 여러개의 3차원 점으로 구성되는 3차원 선 객체를 표현
+PolygonZ ST_POLYGONZ 여러개의 3차원 점으로 구성되는 3차원 다각형 객체를 표현
+Polyhedra ST_POLYHEDRA 3차원 입체 도형 표현
+TIN ST_TIN 3차원 지형 표현
+
+
+[표 2-3] Kairos Spatial SQL 예약어
+RSTREE RSTREEV RSTREE3D
+ST_ADDPOINT ST_ADDPOINTTOLS ST_ADDPOINTTOMP
+ST_ADDPOINTTOPG ST_ANGLE ST_AREA
+ST_ASBINARY ST_ASTEXT
+ST_BOUNDARY ST_BUFFER
+ST_CENTROID ST_CLIPTIN ST_CONTAINS
+ST_CONVEXHULL ST_CROSSES ST_DIFFERENCE
+ST_DIMENSION ST_DISJOINT ST_DISTANCE
+ST_DUPPOINTS ST_ENDPOINT ST_ENVELOPE
+ST_EQUALS ST_EXTERIORRING ST_EXTRUDE
+ST_GEOMCOLLECTION ST_GEOMETRY ST_GEOMETRYN
+ST_GEOMETRYTYPE
+ST_INTERIORRINGN ST_INTERSECTION ST_INTERSECTS
+ST_ISCLOCKWISE ST_ISCLOSED ST_ISEMPTY
+ST_ISRING ST_ISSIMPLE ST_LENGTH
+ST_LINEFROMTEXT ST_LINEFROMWKB ST_LINESTRING
+ST_LINESTRINGZ ST_LINEZFROMTEXT ST_LINEZFROMWKB
+ST_MLINEFROMTEXT ST_MLINEFROMWKB ST_MOVE
+ST_MPOINTFROMTEXT ST_MPOINTFROMWKB ST_MPOLYFROMTEXT
+ST_MPOLYFROMWKB ST_MULTILINESTRING ST_MULTIPOINT
+ST_MULTIPOLYGON
+ST_NEAREST ST_NUMGEOMETRY ST_NUMINTERIORRING
+ST_NUMPOINTS ST_OVERLAPS
+ST_PERIMETER ST_POINT ST_POINTFROMTEXT
+ST_POINTFROMWKB ST_POINTN ST_POINTONSURFACE
+ST_POINTZ ST_POINTZFROMTEXT ST_POINTZFROMWKB
+ST_POLYFROMTEXT ST_POLYFROMWKB ST_POLYGON
+ST_POLYGONZ ST_POLYHEDRA ST_POLYZFROMTEXT
+ST_POLYZFROMWKB
+ST_RECTANGLE ST_RELATE
+ST_RECFROMTEXT ST_RECFROMWKB ST_REPLACEPOINT
+ST_RMDUPPOINTS ST_RMPOINT ST_RMSAMESLOPE
+ST_SAMESLOPE ST_SELFINTERSECTION ST_SRID
+ST_STARTPOINT ST_SYMDIFFERENCE ST_TIN
+ST_TOUCHES ST_UNION ST_WITHIN
+ST_X ST_Y
+
+
+[표 2-8] Kairos Spatial 위상 관계 연산 함수
+Kairos 위상 관계 연산 함수 OGC 위상 관계 연산자
+int ST_CONTAINS(ST_GEOMETRY, ST_GEOMETRY) CONTAINS
+int ST_EQUALS(ST_GEOMETRY, ST_GEOMETRY) EQUALS
+int ST_DISJOINT(ST_GEOMETRY, ST_GEOMETRY) DISJOINT
+int ST_INTERSECTS(ST_GEOMETRY, ST_GEOMETRY) INTERSECTS
+int ST_TOUCHES(ST_GEOMETRY, ST_GEOMETRY) TOUCHES
+int ST_CROSSES(ST_GEOMETRY, ST_GEOMETRY) CROSSES
+int ST_WITHIN(ST_GEOMETRY, ST_GEOMETRY) WITHIN
+int ST_OVERLAPS(ST_GEOMETRY, ST_GEOMETRY) OVERLAPS
+int ST_RELATE(ST_GEOMETRY, ST_GEOMETRY) RELATE
+
+[표 2-9] Kairos Spatial 함수 분류
+함수 종류 설명
+생성 함수 WKT 또는 WKB 표현으로부터 Kairos Spatial 공간 객체 생성
+형식 변환 함수 Kairos Spatial 공간 객체를 WKT/WKB 표현으로 변환
+속성 분석 함수 Kairos Spatial 공간 객체들의 속성 정보 추출 및 분석
+공간객체 연산 함수 공간 객체 또는 공간 객체들간의 연산을 수행하여 새로운 공간 객체 생성
+Point 객체 관련 함수 Point 객체들에만 적용 가능한 함수
+LineString/MultiLineString 객체 관련 함수
+LineString/MultiLineString 객체들에만 적용 가능한 함수
+Polygon/MultiPolygon 객체 관련 함수
+Polygon/MultiPolygon/Rectangle 객체들에만 적용 가능한 함수
+다중 공간 객체 관련 함수
+MultiPoint, MultiLineString, MultiPolygon과 같은 다중공간 객체들에만 적용 가능한 함수
+위상 관계 연산 함수 두 공간 객체간의 공간적 위상 관계를 평가하는 함수
+GML 관련 함수 공간 데이터를 GML 포맷으로 추출한다.
+GeoCode 관련 함수 주소를 지리 좌표로 변환하거나 지리 좌표를 주소로 변환하는 등의 함수
+
+
+CREATE TABLE build (id INT, geom ST_POLYGON);
+CREATE TABLE build3d (id INT, geom ST_POLYGONZ);
+ALTER TABLE build ADD COLUMN ( geom2 ST_LINESTRING);
+ALTER TABLE build RENAME COLUMN geom2 TO geom3;
+ALTER TABLE build DROP COLUMN geom3;
+ALTER TABLE build RENAME TO kairos_spatial;
+DROP TABLE build;
+
+Kairos Spatial에서는 공간 질의 처리 성능을 높이기 위해 공간 객체들의 최소 경
+계 사각형(minimum bounding rectangle) 정보를 이용하여 2차원 공간 색인르 위하
+여 R* Tree 구조의 공간 인덱스 RSTree 와 3차원 공간 색인을 위하여 3D-RTree
+구조의 RSTreeV를 각각 제공한다.
+
+CREATE [UNIQUE] [RSTREE] INDEX IndexName ON TableName (GeoColName)
+생성할 인덱스 종류를 명시하지 않았더라도, 인덱스를 생성할 컬럼이 2차원 공간 객체 타입이라면 RSTree 인덱스가, 
+3차원 공간 객체 타입이라면 RSTreeV 인덱스가 자동으로 생성된다.
+
+CREATE INDEX build_geom_R ON build(geom);
+CREATE RSTREE INDEX build_geom_R ON build(geom);
+
+DROP INDEX build_geom_R;
+
+DELETE FROM build WHERE ST_AREA(geom) > 10;
+UPDATE build
+SET geom=ST_POLYFROMTEXT (‘POLYGON ((1 1, 2 1, 2 2, 1 2, 1 1))',1)
+WHERE id=10;
+
+SELECT * FROM build
+WHERE st_equals(geom, st_pointfromtext (‘point(7 4)’,0))=1;
+
+질의1 : 학교와 병원간의 거리가 100(단위거리) 보다 가까운 객체 쌍을 검색하라.
+select t1.id, t2.id from school t1, hospital t2
+where st_distance (t1.geom, t2.geom) < 100;
+
+질의2 : 학교와 병원이 서로 가장 가까이 위치하는 건물 3쌍을 검색하라.
+select t1.id, t2.id from school t1, hospital t2
+where st_nearest (t1.geom, t2.geom, 3)=1;
+
+Kairos Spatial SQL Reference
+ST_ADDPOINT
+ST_ADDPOINTTOLS
+ST_ADDPOINTTOMP
+ST_ADDPOINTTOPG
+ST_ANGLE
+ST_AREA
+ST_ASBINARY
+ST_ASGML
+ST_ASTEXT
+ST_BOUNDARY
+ST_BUFFER
+ST_CENTROID
+ST_CONTAINS
+ST_CONVEXHULL
+ST_CROSSES
+ST_DIFFERENCE
+ST_DIMENSION
+ST_DISJOINT
+ST_DISTANCE
+ST_DUPPOINTS
+ST_ENDPOINT
+ST_ENVELOPE
+ST_EQUALS
+ST_EXTERIORRING
+ST_GEOMFROMTEXT
+ST_GEOMFROMWKB
+ST_GEOMETRYN
+ST_GEOMETRYTYPE
+ST_INGEOM
+ST_INTERIORRINGN
+ST_INTERSECTION
+ST_INTERSECTS
+ST_ISCLOCKWISE
+ST_ISCLOSED
+ST_ISEMPTY
+ST_ISRING
+ST_ISSIMPLE
+ST_LARGEPOLYGON
+ST_LEFTBUFFER
+ST_LENGTH
+ST_LINEFROMTEXT
+ST_LINEFROMWKB
+ST_MAXX
+ST_MAXY
+ST_MBRCONTAINS
+ST_MBRINTERSECTS
+ST_MBRWITHIN
+ST_MINX
+ST_MINY
+ST_MLINEFROMTEXT
+ST_MLINEFROMWKB
+ST_MOVE
+ST_MPOINTFROMTEXT
+ST_MPOINTFROMWKB
+ST_MPOLYFROMTEXT
+ST_MPOLYFROMWKB
+ST_NEAREST
+ST_NUMGEOMETRY
+ST_NUMINTERIORRING
+ST_NUMPOINTS
+ST_OVERLAPS
+ST_PERIMETER
+ST_POINTFROMTEXT
+ST_POINTFROMWKB
+ST_POINTN
+ST_POINTONSURFACE
+ST_POLYFROMTEXT
+ST_POLYFROMWKB
+ST_RECTFROMTEXT
+ST_RECTFROMWKB
+ST_RELATE
+ST_REPLACEPOINT
+ST_RIGHTBUFFER
+ST_RMSAMESLOPE
+ST_SAMESLOPE
+ST_SELFINTERSECTION
+ST_SRID
+ST_STARTPOINT
+ST_SYMDIFFERENCE
+ST_TOUCHES
+ST_UNION
+ST_WITHIN
+ST_WITHINDISTANCE
+ST_X
+ST_Y

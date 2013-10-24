@@ -1,0 +1,109 @@
+Kairos Spatial 위상 관계 연산 함수들은 공간 객체들간의 위상 관계를 검사하여 TRUE(1) 또는 FALSE(0)를 반환
+
+* 데이터베이스 생성과 삭제
+createdb databaseName [-s initialDBSize] [-g growingDBSize] [-f DBFileSize] [-i indexLogging] [/y]
+createdb test -s 100
+
+dropdb databaseName [/y]
+
+* System 테이블 생성
+CREATE TABLE geometry_columns
+(
+  f_table_catalog varchar(256) NOT NULL,
+  f_table_schema varchar(256) NOT NULL,
+  f_table_name varchar(256) NOT NULL,
+  f_geometry_column varchar(256) NOT NULL,
+  coord_dimension integer NOT NULL,
+  srid integer NOT NULL,
+  f_geometry_type varchar(30) NOT NULL,
+  CONSTRAINT geometry_columns_pk PRIMARY KEY (f_table_catalog, f_table_schema, f_table_name, f_geometry_column)
+)
+
+CREATE [UNIQUE] [TTREE] INDEX IndexName ON TableName (ColumnName[,ColumnName]…)
+
+* JDBC 설정
+Class.forName("kr.co.realtimetech.kairos.jdbc.kairosDriver");
+Connection con = DriverManager.getConnection("jdbc:kairos://localhost:5000/test", "root", "root");
+st = con.createStatement();
+
+/* 192.168.1.1 서버의 test DB에 SJIS, root/root 계정으로 연결 */
+kairosDataSource kds = new kairosDataSource();
+kds.setDescription("description"); // 미지정시 기본값 ""
+kds.setDatabaseName("test"); // 미지정시 기본값 test
+kds.setPortNumber(5000); // 미지정시 기본값 5000
+kds.setServerName("192.168.1.1"); // 미지정시 기본값 "localhost"
+kds.setUser("root"); // 미지정시 기본값 root
+kds.setPassword("root"); // 미지정시 기본값 root
+kds.setCharacterSet("SJIS"); //미지정시 기본값 시스템 Charset
+Connection con = kds.getConnection(); // Connection 요청
+con.close();
+
+# Java Types Mapped to Kairos Types
+Kairos Type Java Type Java Object Type
+BYTE byte java.lang.Byte
+CHAR String java.lang.String
+VARCHAR String java.lang.String
+VARBYTE byte[] java.io. ByteArrayInputStream
+SMALLINT short java.lang.Short
+INTEGER int java.lang.Integer
+FLOAT float java.lang.Float
+DOUBLE double java.lang.Double
+TINYINT byte,boolen java.lang.Byte
+NUMBER java.math.BigDecimal java.math.BigDecimal
+DATE java.sql.Date java.sql.Date
+TIME java.sql.Time java.sql.Time
+TIMESTAMP java.sql.Timestamp java.sql.Timestamp
+
+#=================== kloader ===========================
+gisput {-t table_name | -s schema_file }
+{-shp shape_file}
+[-F first_row] [-L last_row] [–mode mode_type]
+[-auto autoincrement_colname] [–seed seed_value]
+[–step step_value]
+[–bad bad_file] [–log log_file]
+[-error error_type] [-commit commit_unit]
+
+옵션 설명
+-t table_name 파일로부터 읽어들인 데이터를 적재할 테이블의 이름으로
+FORM 파일이 주어질 경우에는 생략할 수 있다.
+-s schema_file table_name 테이블의 스키마 정보를 가지는 FORM 파일에
+대한 경로를 설정한다. table_name이 명시된 경우에는 사용
+하지 않는다.
+-shp shape_file 데이터베이스 테이블로 적재할 공간 객체의 데이터를 저
+장하고 있는 shape 파일의 경로 지정
+-F first_row 적재될 첫번째 행 번호를 설정한다. 기본값은 1이다.
+-L last_row 적재될 마지막 행 번호를 설정한다. 기본값은 shape_file의
+마지막행 번호이다.
+-mode mode_type 데이터 파일로부터 테이블로 데이터 적재시, 해당 테이블
+이 데이터베이스에 존재할 경우, 테이블에 저장되어 있는
+기존 레코드들의 처리 여부를 설정한다.
+< mode_type >
+􀁹 APPEND : 테이블에 저장되어 있는 레코드들을 삭제하
+지 않고, 파일로부터 읽어들인 레코드들을 추가한다.
+􀁹 RELEASE : 테이블에 저장되어 있는 레코드들을 모두
+삭제하고, 파일로부터 읽어들인 레코드들을 추가한다
+-auto
+autoincrement_colname
+데이터가 적재될 테이블에 AUTO_INCREMENT 제약조건
+
+예제1
+다음은 road.shp, road.dbf, road.shx 파일로부터 road 테이블에 공간 객체 데이터를
+적재하기 위한 gisput 명령의 사용예이다. 데이터베이스에 road 테이블이 존재하
+지 않을 경우 road.dbf 파일을 참조하여, road 테이블을 먼저 생성한 후에 데이터
+를 적재한다. –commit 옵션 값이 1이므로 레코드 하나가 적재될 때마다 commit
+이 수행된다.
+gisput –t road –shp road.shp –commit 1
+
+예제2
+다음은 road.shp, road.dbf, road.shx 파일로부터 road 테이블에 공간 객체 데이터를
+적재하기 위한 gisput 명령의 사용예이다. 레코드 식별을 위해 –auto id 옵션
+을 지정하여 id라는 이름의 자동 증가 필드가 추가되도록 하였다. 자동 증가
+필드 fid는 초기값 1, 증가값 1을 가지도록 설정되었다. 데이터베이스에 road
+테이블이 존재하지 않을 경우 road.dbf 파일을 참조하여, road 테이블을 먼저 생
+성한 후에 데이터를 적재한다. –commit 옵션 값이 1이므로 레코드 하나가 적재
+될 때마다 커미트가 자동 수행된다.
+gisput -t fishnet -shp C:\TEMP\SEOUL\FishnetOp.shp -auto fid -seed 1 -step 1 -commit 1
+
+gisput -t KOREA_EMD_2008 -shp C:\TEMP\spatialstatistics\KOREA_EMD_2008.shp -auto fid -seed 1 -step 1 -commit 1
+
+
